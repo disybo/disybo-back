@@ -109,3 +109,6 @@ streamer/config.ini
 .idea/*
 actor-collaboration.tar.bz2
 arenas-jazz.tar.bz2
+
+# configuration
+config.py
