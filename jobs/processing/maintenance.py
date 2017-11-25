@@ -5,7 +5,7 @@ This script performs data fetching jobs related to fleet maintenance
 from sqlalchemy import func
 
 import config
-from api import GarageVisit, Vehicle, RefuelEvent, MaintenanceKM
+from api import GarageVisit, Vehicle, RefuelEvent, MaintenancePeriod
 from jobs.scrapers.scrapers import DBConnector
 
 SERVICE_QUERY = "SELECT service_time, vehicle_id FROM garage_visits GROUP BY vehicle_id, service_time, sehiid ORDER BY vehicle_id, service_time LIMIT 10;"
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         print("{}: {}, {}".format(thing, akm, at))
         avg_km = sum(akm) / len(akm)
         avg_day = sum(at) / len(at)
-        m = MaintenanceKM(type=thing, km_thresh=avg_km, days_thresh=avg_day)
+        m = MaintenancePeriod(type=thing, km_thresh=avg_km, days_thresh=avg_day)
         db.session.add(m)
     db.session.commit()
 

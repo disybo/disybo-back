@@ -24,8 +24,8 @@ class GarageVisit(db.Model):
 
     vehicle_rel = relationship(Vehicle, foreign_keys=[vehicle_id])
 
-class MaintenanceKM(db.Model):
-    __tablename__ = 'maint_km'
+class MaintenancePeriod(db.Model):
+    __tablename__ = 'maintenance_periods'
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String, db.ForeignKey(VehicleType.__table__.columns.stara_id))
