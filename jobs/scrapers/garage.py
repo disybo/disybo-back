@@ -1,4 +1,7 @@
+import datetime
+
 import config
+from api.maintenance_data.models import GarageVisit
 from api.vehicle_data.models import Vehicle, FuelCardNumber, VehicleType
 from jobs.scrapers.scrapers import StaraAPIScraper, DBConnector
 
@@ -30,59 +33,60 @@ class GarageScraper(StaraAPIScraper):
        },
         """
 
-    def get_all_vehicles(self):
-        resp = self.post(self.resource)
-        resp.raise_for_status()
-        vehicles_json = resp.json()
+    def get_all_checkins(self):
 
-        fuel_card_nums = set()
-        vehicles = []
-        vehicle_types = []
 
         session = self.db.session
+        all_ids = [x.vehicle_id for x in session.query(Vehicle).all()]
 
-        for v in vehicles_json['rows']:
-            if 'FuelCardNum' in v:
-                fcn = v['FuelCardNum']
-                fuel_card_nums.add(fcn)
-
-            if 'Name' in v and len(v['Name']) is 6:
-                vehicle_id = v['Name']
-                description = v.get('Description', '')
-
-                (t, y, n) = [vehicle_id[i: i + 2] for i in range(0, 6, 2)]
-
-                vehicle = Vehicle(vehicle_id=vehicle_id,
-                                  fuel_card_num=v.get('FuelCardNum', None),
-                                  description=description,
-                                  type=t,
-                                  year=y,
-                                  num=n)
-                vehicles.append(vehicle)
-                vehicle_types.append(t)
-
-        existing_vehicles = set([x.vehicle_id for x in session.query(Vehicle.vehicle_id).all()])
-        existing_vtypes = set([x.stara_id for x in session.query(VehicleType.stara_id).all()])
-        existing_fcn = set(session.query(FuelCardNumber.num).all())
-
-        for fcn in fuel_card_nums:
-            if fcn not in existing_fcn:
+        for id in all_ids:
+            resp = self.post(self.resource, {'Name': id})
+            resp.raise_for_status()
+            json = resp.json()
+            if 'rows' in json:
+             for row in json['rows']:
+                vehicle_id = row.get('IMPCODE', '')
                 try:
-                    session.add(FuelCardNumber(num=fcn))
+                    service_time = datetime.datetime.fromtimestamp(row.get('SERVD') / 1000)
+                except Exception as ex:
+                    print("Could not parse service time!")
+                    pass
+                try:
+                    bill_time = datetime.datetime.fromtimestamp(row.get('BILLD') / 1000)
+                except Exception as ex:
+                    print("Could not parse bill time!")
+                    pass
+                note = row.get('NOTE', '')
+                name = row.get('NAME', '')
+
+                sehiid = row.get('SEHIID', '')
+                rtype = row.get('RTYPE', 1.0)
+                total_sum = row.get('TSUM', 0.0)
+                item = row.get('ITEM', '')
+                ssumnovat = row.get('SSUMNOVAT', 0.0)
+                unitpr = row.get('UNIPTR', 0.0)
+
+                visit = GarageVisit(
+                    vehicle_id=vehicle_id,
+                    service_time=service_time,
+                    bill_time=bill_time,
+                    note=note,
+                    name=name,
+                    sehiid=sehiid,
+                    rtype=rtype,
+                    total_sum=total_sum,
+                    item=item,
+                    ssumnovat=ssumnovat,
+                    unitpr=unitpr
+                )
+                try:
+                    session.add(visit)
                     session.commit()
-                except:
+                except Exception as e:
+                    print("Caught {}".format(e))
                     pass
 
-        for v in vehicles:
-            if v.type not in existing_vtypes:
-                try:
-                    session.add(VehicleType(stara_id=v.type, display_name='N/A'))
-                    session.commit()
-                except:
-                    pass
-            if v.vehicle_id not in existing_vehicles:
-                try:
-                    session.add(v)
-                    session.commit()
-                except:
-                    pass
+
+if __name__ == '__main__':
+    scraper = GarageScraper()
+    scraper.get_all_checkins()
