@@ -45,8 +45,3 @@ class StaraAPIScraper(object):
         r = requests.post(url="{}/{}".format(self.base_url, resource), headers=self.headers, params=payload)
         return r
 
-
-if __name__ == '__main__':
-    scraper = VehicleScraper()
-    scraper.bootstrap()
-    scraper.get_all_vehicles()
