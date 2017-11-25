@@ -20,7 +20,7 @@ class Vehicle(db.Model):
     __tablename__ = 'vehicles'
 
     id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.String(6))
+    vehicle_id = db.Column(db.String(6), unique=True)
     fuel_card_num = db.Column(db.String(), db.ForeignKey(FuelCardNumber.__table__.columns.num))
     description = db.Column(db.String())
     type = db.Column(db.String, db.ForeignKey(VehicleType.__table__.columns.stara_id))
