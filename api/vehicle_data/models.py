@@ -32,7 +32,6 @@ class Vehicle(db.Model):
     type_rel = relationship(VehicleType, foreign_keys=[type])
 
 
-
 # TODO Could this be better off as an ENUM?
 class FuelType(db.Model):
     __tablename__ = 'fuel_types'
