@@ -63,7 +63,8 @@ def fuel_data():
 @vehicles.route('/alerts')
 def alerts():
     from database import db
-    alerts = [x.as_dict() for x in db.session.query(Notification).all()]
+    from sqlalchemy import func
+    alerts = [x.as_dict() for x in db.session.query(Notification).order_by(func.random()).limit(20)]
     # alerts.append({
     #     "vehicle_type": "B2",
     #     "urgency": "high",
