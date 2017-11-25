@@ -74,9 +74,12 @@ def query_vehicles():
             'vehicle_id': car.vehicle_id,
             'description': car.description,
             'consumption': total_fuel
-         }
-        print(data)
-        counter += 1
+        }
+
+        if data['consumption']:
+            print(data)
+            counter += 1
+
         if counter == 10:
             break
 
