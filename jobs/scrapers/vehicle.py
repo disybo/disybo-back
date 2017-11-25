@@ -49,6 +49,11 @@ class VehicleScraper(StaraAPIScraper):
 
         session = self.db.session
 
+        existing_vehicles = set([x.vehicle_id for x in session.query(Vehicle.vehicle_id).all()])
+        existing_vtypes = set([x.stara_id for x in session.query(VehicleType.stara_id).all()])
+        existing_fcn = set(session.query(FuelCardNumber.num).all())
+
+
         for v in vehicles_json['rows']:
             if 'FuelCardNum' in v:
                 fcn = v['FuelCardNum']
@@ -56,6 +61,10 @@ class VehicleScraper(StaraAPIScraper):
 
             if 'Name' in v and len(v['Name']) is 6:
                 vehicle_id = v['Name']
+                if vehicle_id in existing_vehicles:
+                    continue
+
+                print("Processing {}".format(vehicle_id))
                 description = v.get('Description', '')
 
                 (t, y, n) = [vehicle_id[i: i + 2] for i in range(0, 6, 2)]
@@ -69,17 +78,15 @@ class VehicleScraper(StaraAPIScraper):
                 vehicles.append(vehicle)
                 vehicle_types.append(t)
 
-        existing_vehicles = set([x.vehicle_id for x in session.query(Vehicle.vehicle_id).all()])
-        existing_vtypes = set([x.stara_id for x in session.query(VehicleType.stara_id).all()])
-        existing_fcn = set(session.query(FuelCardNumber.num).all())
-
-        for fcn in fuel_card_nums:
-            if fcn not in existing_fcn:
-                try:
-                    session.add(FuelCardNumber(num=fcn))
-                    session.commit()
-                except:
-                    pass
+        # for fcn in fuel_card_nums:
+        #     if fcn not in existing_fcn:
+        #         try:
+        #             session.add(FuelCardNumber(num=fcn))
+        #             session.commit()
+        #         except Exception as ex:
+        #             print("Skipping FCN due to {}".format(ex))
+        #             session.rollback()
+        #             pass
 
         for v in vehicles:
             if v.type not in existing_vtypes:
@@ -87,10 +94,17 @@ class VehicleScraper(StaraAPIScraper):
                     session.add(VehicleType(stara_id=v.type, display_name='N/A'))
                     session.commit()
                 except:
+                    session.rollback()
                     pass
             if v.vehicle_id not in existing_vehicles:
                 try:
                     session.add(v)
                     session.commit()
-                except:
+                except Exception as ex:
+                    session.rollback()
+                    print("Skipping vehicle due to {}".format(ex))
                     pass
+
+if __name__ == '__main__':
+    scraper = VehicleScraper()
+    scraper.get_all_vehicles()

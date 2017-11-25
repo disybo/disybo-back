@@ -37,12 +37,15 @@ class GarageScraper(StaraAPIScraper):
 
 
         session = self.db.session
-        all_ids = [x.vehicle_id for x in session.query(Vehicle).all()]
+        all_ids = set([x.vehicle_id for x in session.query(Vehicle).all()])
+        already_processed = set([x.vehicle_id for x in session.query(GarageVisit).all()])
 
-        for id in all_ids:
+        to_process = all_ids - already_processed
+        for id in to_process:
             resp = self.post(self.resource, {'Name': id})
             resp.raise_for_status()
             json = resp.json()
+            print("Processing {}".format(id))
             if 'rows' in json:
              for row in json['rows']:
                 vehicle_id = row.get('IMPCODE', '')
@@ -50,12 +53,12 @@ class GarageScraper(StaraAPIScraper):
                     service_time = datetime.datetime.fromtimestamp(row.get('SERVD') / 1000)
                 except Exception as ex:
                     print("Could not parse service time!")
-                    pass
+                    continue
                 try:
                     bill_time = datetime.datetime.fromtimestamp(row.get('BILLD') / 1000)
                 except Exception as ex:
                     print("Could not parse bill time!")
-                    pass
+                    continue
                 note = row.get('NOTE', '')
                 name = row.get('NAME', '')
 

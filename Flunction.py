@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 
 from config import DevelopmentConfig
 from database import db
-# from models.boy import Boy
 
 # Import Blueprints
 from api.vehicle_data.vehicles import vehicles
