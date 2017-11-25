@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from flask import Blueprint, Response
 import json
 from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType
@@ -19,12 +21,18 @@ def hello_world(user_id):
 @vehicles.route('/')
 def get_all_vehicles():
     vehicle_list = Vehicle.query.all()
+    vehicle_types_list = VehicleType.query.all()
+
+    vehicle_types_dict = defaultdict()
+
+    for vehicle_type in vehicle_types_list:
+        vehicle_types_dict[vehicle_type.stara_id] = vehicle_type.display_name
 
     json_list = []
 
     for vehicle in vehicle_list:
         json_list.append({"id": vehicle.id, "vehicle_id": vehicle.vehicle_id, "description": vehicle.description,
-                          "type": VehicleType.query.get(vehicle.type).display_name})
+                          "type": vehicle_types_dict[vehicle.type]})
 
     # then do this
     return Response(json.dumps(json_list), mimetype='application/json')
