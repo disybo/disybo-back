@@ -48,7 +48,6 @@ def get_overall_consumption():
 
 @stations.route('/fuel/granular')
 def get_granular_consumption():
-    print('wat')
     request_start_date = request.args.get('start')
     request_end_date = request.args.get('end')
 
@@ -66,18 +65,14 @@ def get_granular_consumption():
         granular_end_date = end_date.replace(day=last_day[1])
 
         fuel_stations = FuelStation.query.all()
-        print(fuel_stations)
 
         for fs in fuel_stations:
-            print(fs)
             month_index = 0
             station_info = {'station_id': fs.station_id,
                             'display_name': fs.display_name,
                             'fuel_data': []}
             granular_start_date = start_date.replace(day=1)
             while granular_start_date < granular_end_date:
-                print(granular_start_date)
-                print(granular_end_date)
                 refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
                     RefuelEvent.station_id == fs.station_id,
                     RefuelEvent.time.between(start_date, end_date)
