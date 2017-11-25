@@ -1,6 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 from api.vehicle_station_data.models import FuelStation, RefuelEvent, Boy
 from datetime import datetime
+from sqlalchemy.sql import func
 from database import db
 from datetime import datetime
 import json
@@ -18,19 +19,29 @@ def hello_world(user_id):
         return '<h1>Something is broken.</h1>'
 
 
-@stations.route('/fuel/overall/')
-def get_overall_consumption():
-    request_start_date = request.args.get('start_date')
-    request_end_date = request.args.get('end_date')
+@stations.route('/fuel/overall/<string:request_start_date>/<string:request_end_date>')
+def get_overall_consumption(request_start_date, request_end_date):
+    # request_start_date = request.args.get('start_date')
+    # request_end_date = request.args.get('end_date')
     # granularity = request.args.get('granularity')
 
     start_date = datetime.strptime(request_start_date.split('T')[0], '%Y-%m-%d')
     end_date = datetime.strptime(request_end_date.split('T')[0], '%Y-%m-%d')
 
-    refuels = RefuelEvent.query.filter(
-        RefuelEvent.time.between(start_date, end_date)
-    )
-    return jsonify(refuels)
+    json_list = []
+    fuel_stations = FuelStation.query.all()
+
+    for fs in fuel_stations:
+        refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+            RefuelEvent.station_id == fs.station_id,
+            RefuelEvent.time.between(start_date, end_date)
+        ).scalar()
+        json_list.append(
+            {'station_id': fs.station_id,
+             'display_name': fs.display_name,
+             'fuel_volume': refuel_sum}
+        )
+    return Response(json.dumps(json_list), mimetype='application/json')
 
 
 @stations.route('/')
