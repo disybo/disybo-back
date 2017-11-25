@@ -32,6 +32,16 @@ class Vehicle(db.Model):
     type_rel = relationship(VehicleType, foreign_keys=[type])
 
 
+class VehicleFuelConsumption(db.Model):
+    __tablename__ = 'vehicle_fuel_consumption'
+
+    id = db.Column(db.Integer, primary_key=True)
+    fuel_card_num = db.Column(db.String(), db.ForeignKey(FuelCardNumber.__table__.columns.num))
+    vehicle_id = db.Column(db.String(6), db.ForeignKey(Vehicle.__table__.columns.vehicle_id))
+    description = db.Column(db.String())
+    consumption = db.Column(db.Float())
+
+
 # TODO Could this be better off as an ENUM?
 class FuelType(db.Model):
     __tablename__ = 'fuel_types'
