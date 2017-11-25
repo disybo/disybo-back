@@ -20,7 +20,7 @@ def hello_world(user_id):
 
 @vehicles.route('/')
 def get_all_vehicles():
-    vehicle_list = Vehicle.query.all()
+    vehicle_list = Vehicle.query.limit(100)
     vehicle_types_list = VehicleType.query.all()
 
     vehicle_types_dict = defaultdict()
