@@ -38,6 +38,16 @@ def get_all_vehicles():
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
+@vehicles.route('/fuel/ratio')
+def fuel_ratio():
+    print('ok')
+
+
+@vehicles.route('/fuel/car')
+def fuel_per_car():
+    print('ok')
+
+
 @vehicles.route('/stations/fuel')
 def fuel_data():
     refueling_data = {}

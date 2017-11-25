@@ -4,6 +4,8 @@ from datetime import datetime
 from sqlalchemy.sql import func
 from database import db
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import calendar
 import json
 
 stations = Blueprint('stations', 'stations', url_prefix='/api/stations')
@@ -41,6 +43,49 @@ def get_overall_consumption():
              'display_name': fs.display_name,
              'fuel_volume': refuel_sum}
         )
+    return Response(json.dumps(json_list), mimetype='application/json')
+
+
+@stations.route('/fuel/granular')
+def get_granular_consumption():
+    print('wat')
+    request_start_date = request.args.get('start')
+    request_end_date = request.args.get('end')
+
+    start_date = datetime.strptime(request_start_date.split('T')[0], '%Y-%m-%d')
+    end_date = datetime.strptime(request_end_date.split('T')[0], '%Y-%m-%d')
+
+    # granularity = request.args.get('granularity')
+    granularity = 'monthly'
+
+    json_list = []
+
+    if granularity == 'monthly':
+        granular_start_date = start_date.replace(day=1)
+        last_day = calendar.monthrange(end_date.year, end_date.month)
+        granular_end_date = end_date.replace(day=last_day[1])
+
+        fuel_stations = FuelStation.query.all()
+        print(fuel_stations)
+
+        for fs in fuel_stations:
+            print(fs)
+            month_index = 0
+            station_info = {'station_id': fs.station_id,
+                            'display_name': fs.display_name,
+                            'fuel_data': []}
+            granular_start_date = start_date.replace(day=1)
+            while granular_start_date < granular_end_date:
+                print(granular_start_date)
+                print(granular_end_date)
+                refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+                    RefuelEvent.station_id == fs.station_id,
+                    RefuelEvent.time.between(start_date, end_date)
+                ).scalar()
+                station_info['fuel_data'].append({'month': month_index, 'fuel_volume': refuel_sum })
+                granular_start_date = granular_start_date + relativedelta(months=1)
+                month_index += 1
+            json_list.append(station_info)
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
