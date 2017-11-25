@@ -35,6 +35,7 @@ class APIScraper(object):
         r = requests.post(url="{}/{}".format(self.base_url, resource), headers=self.headers, params=payload)
         print(r.json())
 
+
 if __name__ == '__main__':
     scraper = APIScraper()
     scraper.post("Vehicles")
