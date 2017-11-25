@@ -1,6 +1,6 @@
 from flask import Blueprint, Response
-from .models import Boy, Vehicle, VehicleType
 import json
+from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType
 from database import db
 
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
@@ -28,3 +28,16 @@ def get_all_vehicles():
 
     # then do this
     return Response(json.dumps(json_list), mimetype='application/json')
+
+
+@vehicles.route('/stations/fuel')
+def fuel_data():
+    refueling_data = {}
+
+    fuel_stations = FuelStation.query.all()
+    for fuel_station in fuel_stations:
+        name = fuel_station.display_name
+        refuel_events = RefuelEvent.query.filter(station_id=fuel_station.id)
+    return 'Ok'
+
+
