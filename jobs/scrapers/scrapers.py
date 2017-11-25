@@ -1,12 +1,24 @@
-"""
-Scrapes an API and returns the JSON data
-"""
 import requests
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from common.globals import STARA_API_BASE
 
 
-class APIScraper(object):
+class DBConnector(object):
+    engine = None
+    session = None
+
+    def __init__(self, uri):
+        self.engine = create_engine(uri)
+        Session = sessionmaker(bind=self.engine)
+        self.session = Session(autoflush=True)
+
+
+""" Scrapes an API and returns the JSON data """
+
+
+class StaraAPIScraper(object):
     app_key = ""
     base_url = ""
     headers = {}
@@ -24,18 +36,12 @@ class APIScraper(object):
     def get(self, resource, payload=None):
         if payload is None:
             payload = {}
-        print("Getting  {}".format(resource))
         r = requests.get(url="{}/{}".format(self.base_url, resource), headers=self.headers, params=payload)
-        print(r.json())
+        return r
 
     def post(self, resource, payload=None):
         if payload is None:
             payload = {}
-        print("Posting  {}".format(resource))
         r = requests.post(url="{}/{}".format(self.base_url, resource), headers=self.headers, params=payload)
-        print(r.json())
+        return r
 
-
-if __name__ == '__main__':
-    scraper = APIScraper()
-    scraper.post("Vehicles")

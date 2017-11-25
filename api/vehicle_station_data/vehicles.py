@@ -1,4 +1,5 @@
-from flask import Blueprint
+from flask import Blueprint, Response
+import json
 from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType
 from database import db
 
@@ -15,9 +16,24 @@ def hello_world(user_id):
         return '<h1>Something is broken.</h1>'
 
 
+@vehicles.route('/')
+def get_all_vehicles():
+    vehicle_list = Vehicle.query.all()
+
+    json_list = []
+
+    for vehicle in vehicle_list:
+        json_list.append({"id": vehicle.id, "vehicle_id": vehicle.vehicle_id, "description": vehicle.description,
+                          "type": VehicleType.query.get(vehicle.type).display_name})
+
+    # then do this
+    return Response(json.dumps(json_list), mimetype='application/json')
+
+
 @vehicles.route('/stations/fuel')
 def fuel_data():
     refueling_data = {}
+
     fuel_stations = FuelStation.query.all()
     for fuel_station in fuel_stations:
         name = fuel_station.display_name

@@ -2,6 +2,8 @@ from flask import Blueprint, request, Response, jsonify
 from api.vehicle_station_data.models import FuelStation, RefuelEvent, Boy
 from datetime import datetime
 from sqlalchemy.sql import func
+from database import db
+from datetime import datetime
 import json
 
 stations = Blueprint('stations', 'stations', url_prefix='/api/stations')
@@ -50,8 +52,11 @@ def get_all_stations():
 
     for station in station_list:
         json_list.append({"id": station.id, "display_name": station.display_name})
+        print(station.display_name)
 
     # then do this
     return Response(json.dumps(json_list), mimetype='application/json')
+
+
 
 
