@@ -1,9 +1,10 @@
+import json
 from collections import defaultdict
 
 from flask import Blueprint, Response
-import json
-from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType
-from database import db
+
+from api import MaintenancePeriod, Notification
+from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation
 
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
 
@@ -61,23 +62,24 @@ def fuel_data():
 
 @vehicles.route('/alerts')
 def alerts():
-    alerts = []
-    alerts.append({
-        "vehicle_type": "B2",
-        "urgency": "high",
-        "vehicle_id": "B21601",
-        "description": "20km (3 days) until recommended maintenance"
-    })
-    alerts.append({
-        "vehicle_type": "B1",
-        "urgency": "low",
-        "vehicle_id": "B19903",
-        "description": "80km (20 days) until recommended maintenance"
-    })
-    alerts.append({
-        "vehicle_type": "73",
-        "urgency": "medium",
-        "vehicle_id": "731102",
-        "description": "16km (7 days) until recommended maintenance"
-    })
+    from database import db
+    alerts = [x.as_dict() for x in db.session.query(Notification).all()]
+    # alerts.append({
+    #     "vehicle_type": "B2",
+    #     "urgency": "high",
+    #     "vehicle_id": "B21601",
+    #     "description": "20km (3 days) until recommended maintenance"
+    # })
+    # alerts.append({
+    #     "vehicle_type": "B1",
+    #     "urgency": "low",
+    #     "vehicle_id": "B19903",
+    #     "description": "80km (20 days) until recommended maintenance"
+    # })
+    # alerts.append({
+    #     "vehicle_type": "73",
+    #     "urgency": "medium",
+    #     "vehicle_id": "731102",
+    #     "description": "16km (7 days) until recommended maintenance"
+    # })
     return Response(json.dumps(alerts), mimetype='application/json')

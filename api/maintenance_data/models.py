@@ -34,3 +34,20 @@ class MaintenancePeriod(db.Model):
 
     type_rel = relationship(VehicleType, foreign_keys=[type])
 
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(db.String(6), db.ForeignKey(Vehicle.__table__.columns.vehicle_id))
+    type = db.Column(db.String())
+    urgency = db.Column(db.String())
+    description = db.Column(db.Text())
+
+    vehicle_rel = relationship(Vehicle, foreign_keys=[vehicle_id])
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+
