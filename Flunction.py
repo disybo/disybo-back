@@ -5,10 +5,15 @@ from config import DevelopmentConfig
 from database import db
 from models.boy import Boy
 
+# Blueprints
+from api.vehicle_data.vehicles import vehicles
+
 app = Flask(__name__)
 CORS(app)
 
 app.config.from_object(DevelopmentConfig)
+
+app.register_blueprint(vehicles)
 
 
 @app.route('/')
