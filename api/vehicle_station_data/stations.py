@@ -17,10 +17,10 @@ def hello_world(user_id):
         return '<h1>Something is broken.</h1>'
 
 
-@stations.route('/fuel/overall/')
-def get_overall_consumption():
-    request_start_date = request.args.get('start_date')
-    request_end_date = request.args.get('end_date')
+@stations.route('/fuel/overall/<string:request_start_date>/<string:request_end_date>')
+def get_overall_consumption(request_start_date, request_end_date):
+    # request_start_date = request.args.get('start_date')
+    # request_end_date = request.args.get('end_date')
     # granularity = request.args.get('granularity')
 
     start_date = datetime.strptime(request_start_date.split('T')[0], '%Y-%m-%d')
@@ -28,8 +28,19 @@ def get_overall_consumption():
 
     refuels = RefuelEvent.query.filter(
         RefuelEvent.time.between(start_date, end_date)
-    )
-    return jsonify(refuels)
+    ).all()
+
+    json_list = []
+    for rf in refuels:
+        json_list.append({'id': rf.id,
+                          'station_id': rf.station_id,
+                          'fuel_card_num': rf.fuel_card_num,
+                          'fuel_type': rf.fuel_type,
+                          'km': rf.km,
+                          'time': rf.time.isoformat()
+                          })
+
+    return Response(json.dumps(json_list), mimetype='application/json')
 
 
 @stations.route('/')
