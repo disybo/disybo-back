@@ -19,10 +19,10 @@ def hello_world(user_id):
         return '<h1>Something is broken.</h1>'
 
 
-@stations.route('/fuel/overall/')
+@stations.route('/fuel/overall')
 def get_overall_consumption():
-    request_start_date = request.args.get('start_date')
-    request_end_date = request.args.get('end_date')
+    request_start_date = request.args.get('start')
+    request_end_date = request.args.get('end')
     # granularity = request.args.get('granularity')
 
     start_date = datetime.strptime(request_start_date.split('T')[0], '%Y-%m-%d')
