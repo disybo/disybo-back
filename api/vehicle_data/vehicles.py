@@ -1,5 +1,6 @@
 from flask import Blueprint
 from .models import Boy
+from database import db
 
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
 
@@ -12,4 +13,3 @@ def hello_world(user_id):
     except Exception as ex:
         print(ex)
         return '<h1>Something is broken.</h1>'
-
