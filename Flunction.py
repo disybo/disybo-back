@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 
 from config import DevelopmentConfig
 from database import db
-from models.boy import Boy
+# from models.boy import Boy
 
 # Import Blueprints
 from api.vehicle_data.vehicles import vehicles
@@ -25,6 +25,7 @@ def blank():
     return 'Hello, world'
 
 
+'''
 @app.route('/tables')
 def tables():
     from sqlalchemy import MetaData
@@ -48,6 +49,7 @@ def user(user_id):
     except Exception as ex:
         print(ex)
         return '<h1>Something is broken.</h1>'
+'''
 
 
 if __name__ == '__main__':
