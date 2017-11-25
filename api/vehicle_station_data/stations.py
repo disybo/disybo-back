@@ -73,12 +73,13 @@ def get_granular_consumption():
                             'fuel_data': []}
             granular_start_date = start_date.replace(day=1)
             while granular_start_date < granular_end_date:
+                next_date = granular_start_date + relativedelta(months=1)
                 refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
                     RefuelEvent.station_id == fs.station_id,
-                    RefuelEvent.time.between(start_date, end_date)
+                    RefuelEvent.time.between(granular_start_date, next_date)
                 ).scalar()
                 station_info['fuel_data'].append({'month': month_index, 'fuel_volume': refuel_sum })
-                granular_start_date = granular_start_date + relativedelta(months=1)
+                granular_start_date = next_date
                 month_index += 1
             json_list.append(station_info)
     return Response(json.dumps(json_list), mimetype='application/json')
