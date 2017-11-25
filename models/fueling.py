@@ -16,7 +16,7 @@ class FuelStation(db.Model):
     __tablename__ = 'fuel_stations'
 
     id = db.Column(db.Integer, primary_key=True)
-    station_id = db.Column(db.String(6))
+    station_id = db.Column(db.String())
     display_name = db.Column(db.String())
     long = db.Column(db.Float)
     lat = db.Column(db.Float)
@@ -26,7 +26,7 @@ class RefuelEvent(db.Model):
     __tablename__ = 'refuel_events'
 
     id = db.Column(db.Integer, primary_key=True)
-    station_id = db.Column(db.String(6), db.ForeignKey(FuelStation.__table__.columns.station_id))
+    station_id = db.Column(db.Integer, db.ForeignKey(FuelStation.__table__.columns.id))
     fuel_card_num = db.Column(db.String(), db.ForeignKey(Vehicle.__table__.columns.fuel_card_num))
     fuel_type = db.Column(db.Integer, db.ForeignKey(FuelType.__table__.columns.id))
     fuel_volume = db.Column(db.Float)

@@ -15,7 +15,7 @@ class Vehicle(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(db.String(6))
-    fuel_card_num = db.Column(db.String())
+    fuel_card_num = db.Column(db.String(), unique=True)
     description = db.Column(db.String())
     type = db.Column(db.Integer, db.ForeignKey(VehicleType.__table__.columns.id))
     year = db.Column(db.Integer)
