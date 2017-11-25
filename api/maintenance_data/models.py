@@ -30,6 +30,7 @@ class MaintenanceKM(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String, db.ForeignKey(VehicleType.__table__.columns.stara_id))
     km_thresh = db.Column(db.Float)
+    days_thresh = db.Column(db.Integer)
 
     type_rel = relationship(VehicleType, foreign_keys=[type])
 
