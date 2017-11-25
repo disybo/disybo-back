@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 from config import DevelopmentConfig
 from database import db
@@ -9,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 app.config.from_object(DevelopmentConfig)
-
+migrate = Migrate(app, db)
 
 @app.route('/')
 def blank():
