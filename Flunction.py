@@ -1,13 +1,14 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
-
 from config import DevelopmentConfig
 from database import db
-from api.vehicle_data.models import Boy
+
+from api.vehicle_station_data.models import Boy
 
 # Import Blueprints
-from api.vehicle_data.vehicles import vehicles
+from api.vehicle_station_data.vehicles import vehicles
+from api.vehicle_station_data.stations import stations
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +19,7 @@ migrate = Migrate(app, db)
 
 # Register Blueprints
 app.register_blueprint(vehicles)
+app.register_blueprint(stations)
 
 
 @app.route('/')
