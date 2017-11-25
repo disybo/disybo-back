@@ -78,7 +78,7 @@ def get_granular_consumption():
                     RefuelEvent.station_id == fs.station_id,
                     RefuelEvent.time.between(granular_start_date, next_date)
                 ).scalar()
-                station_info['fuel_data'].append({'month': month_index, 'fuel_volume': refuel_sum })
+                station_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum })
                 granular_start_date = next_date
                 month_index += 1
             json_list.append(station_info)
