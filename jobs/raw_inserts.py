@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from jobs.scrapers.scrapers import DBConnector
-from api.vehicle_data.models import FuelStation, FuelType
+from api.vehicle_station_data.models import FuelStation, FuelType, RefuelEvent, Vehicle
+from sqlalchemy.sql import func
 import config
 
 
@@ -50,6 +51,37 @@ def insert_fuel_types():
             print('Added fueltype: ', ft.display_name)
     session.commit()
 
+
+def query_vehicles():
+    db = DBConnector(config.DevelopmentConfig.SQLALCHEMY_DATABASE_URI)
+    session = db.session
+    json_list = []
+    counter = 0
+    for v in session.query(Vehicle.fuel_card_num).distinct():
+        fuel_card_num = v[0]
+        if fuel_card_num == 'None':
+            continue
+        cars = session.query(Vehicle).filter(Vehicle.fuel_card_num == fuel_card_num).all()
+        if len(cars) > 1:
+            continue
+        car = cars[0]
+        total_fuel = session.query(RefuelEvent).with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+            RefuelEvent.fuel_card_num == fuel_card_num
+        ).scalar()
+
+        data = {
+            'id': car.id,
+            'vehicle_id': car.vehicle_id,
+            'description': car.description,
+            'consumption': total_fuel
+         }
+        print(data)
+        counter += 1
+        if counter == 10:
+            break
+
+
 if __name__ == '__main__':
     # insert_fuel_stations()
-    insert_fuel_types()
+    # insert_fuel_types()
+    query_vehicles()
