@@ -1,5 +1,6 @@
 from flask import Blueprint, request, Response, jsonify
 from api.vehicle_station_data.models import FuelStation, RefuelEvent, Boy
+from datetime import datetime
 from database import db
 import json
 
@@ -18,9 +19,17 @@ def hello_world(user_id):
 
 @stations.route('/fuel/overall/')
 def get_overall_consumption():
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
-    granularity = request.args.get('granularity')
+    request_start_date = request.args.get('start_date')
+    request_end_date = request.args.get('end_date')
+    # granularity = request.args.get('granularity')
+
+    start_date = datetime.strptime(request_start_date.split('T')[0], '%Y-%m-%d')
+    end_date = datetime.strptime(request_end_date.split('T')[0], '%Y-%m-%d')
+
+    refuels = RefuelEvent.query.filter(
+        RefuelEvent.time.between(start_date, end_date)
+    )
+    return jsonify(refuels)
 
 
 @stations.route('/')
