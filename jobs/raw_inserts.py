@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from jobs.scrapers.scrapers import DBConnector
-from api.vehicle_data.models import FuelStation
+from api.vehicle_data.models import FuelStation, FuelType
 import config
 
 
@@ -29,5 +29,27 @@ def insert_fuel_stations():
             print('Added fuelstation: ', fs.display_name)
     session.commit()
 
+
+def insert_fuel_types():
+    db = DBConnector(config.DevelopmentConfig.SQLALCHEMY_DATABASE_URI)
+    session = db.session
+
+    fuel_types = [
+        {'stara_id': '0001', 'display_name': 'Diesel'},
+        {'stara_id': '0002', 'display_name': 'polttoöljy'},
+        {'stara_id': '0003', 'display_name': 'bensa'},
+        {'stara_id': '0004', 'display_name': 'ADblue'},
+
+    ]
+
+    for fuel_type in fuel_types:
+        ft = FuelType(stara_id=fuel_type['stara_id'],
+                      display_name=fuel_type['display_name'])
+        if not session.query(exists().where(FuelType.stara_id == ft.stara_id)).scalar():
+            session.add(ft)
+            print('Added fueltype: ', ft.display_name)
+    session.commit()
+
 if __name__ == '__main__':
-    insert_fuel_stations()
+    # insert_fuel_stations()
+    insert_fuel_types()
