@@ -4,7 +4,6 @@ import json
 from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType, VehicleFuelConsumption
 from api import MaintenancePeriod, Notification
 
-
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
 
 

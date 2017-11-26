@@ -27,11 +27,12 @@ if __name__ == '__main__':
 
     for limit in maint_periods:
         latest_services = (
-        db.session.query(GarageVisit.vehicle_id, Vehicle.fuel_card_num, func.max(GarageVisit.service_time).label('service_time'))
-        .join(Vehicle)
-        .filter(Vehicle.fuel_card_num != None)
-        .filter(Vehicle.vehicle_id == GarageVisit.vehicle_id)
-        .group_by(GarageVisit.vehicle_id, Vehicle.fuel_card_num)
+            db.session.query(GarageVisit.vehicle_id, Vehicle.fuel_card_num,
+                             func.max(GarageVisit.service_time).label('service_time'))
+                .join(Vehicle)
+                .filter(Vehicle.fuel_card_num != None)
+                .filter(Vehicle.vehicle_id == GarageVisit.vehicle_id)
+                .group_by(GarageVisit.vehicle_id, Vehicle.fuel_card_num)
         ).all()
 
         for s in latest_services:
@@ -66,20 +67,21 @@ if __name__ == '__main__':
                         thresh_dur = thresholds[t]['days']
                         if driven_km >= thresh_km:
                             urgency = "urgent"
-                            description = "This vehicle is overdue for its scheduled maintenance ({}km of recommended {}km)".format(driven_km, thresh_km)
+                            description = "This vehicle is overdue for its scheduled maintenance ({}km of recommended {}km)".format(
+                                driven_km, thresh_km)
                         elif driven_km >= 0.9 * thresh_km:
                             urgency = "high"
                             description = template.format(thresh_km - driven_km, thresh_km)
                         elif driven_km >= 0.7 * thresh_km:
                             urgency = "medium"
                             description = template.format(thresh_km - driven_km, thresh_km)
-                        elif driven_km >= 0.5* thresh_km:
+                        elif driven_km >= 0.5 * thresh_km:
                             urgency = "low"
                             description = template.format(thresh_km - driven_km, thresh_km)
 
                         if urgency:
-                            alert = Notification(urgency=urgency, description=description, vehicle_id=vehicle_id, type=vehicle_type)
+                            alert = Notification(urgency=urgency, description=description, vehicle_id=vehicle_id,
+                                                 type=vehicle_type)
                             print("Adding {}".format(alert))
                             db.session.add(alert)
                             db.session.commit()
-

@@ -76,9 +76,6 @@ def get_fuel_type():
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
-
-
-
 @stations.route('/fuel/granular')
 def get_granular_consumption():
     request_start_date = request.args.get('start')
@@ -111,7 +108,7 @@ def get_granular_consumption():
                     RefuelEvent.station_id == fs.station_id,
                     RefuelEvent.time.between(granular_start_date, next_date)
                 ).scalar()
-                station_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum })
+                station_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
                 granular_start_date = next_date
                 month_index += 1
             json_list.append(station_info)
@@ -130,7 +127,3 @@ def get_all_stations():
 
     # then do this
     return Response(json.dumps(json_list), mimetype='application/json')
-
-
-
-
