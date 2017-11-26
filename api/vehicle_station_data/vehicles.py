@@ -72,8 +72,16 @@ def fuel_per_car():
 
 @vehicles.route('/fuel/consumption/type')
 def fuel_per_vehicle_type():
-    vehicle_type = request.args.get('id')
-    vehicles = Vehicle.query.filter(Vehicle.type == vehicle_type).all()
+    vehicle_type_id = request.args.get('id')
+    vehicle_type = VehicleType.query.filter(VehicleType.stara_id == vehicle_type_id).all()[0]
+
+    vehicles = Vehicle.query.filter(Vehicle.type == vehicle_type_id).all()
+
+    fuel_card_nums = []
+    for vehicle in vehicles:
+        if VehicleFuelConsumption.query.filter(
+                        VehicleFuelConsumption.fuel_card_num == vehicle.fuel_card_num).scalar():
+            fuel_card_nums.append(vehicle.fuel_card_num)
 
     end_date = datetime.today()
     start_date = end_date - relativedelta(years=1)
@@ -83,18 +91,15 @@ def fuel_per_vehicle_type():
     last_day = calendar.monthrange(end_date.year, end_date.month)
     granular_end_date = end_date.replace(day=last_day[1])
 
-    refill_info = {'vehicle_type': vehicle_type,
+    refill_info = {'vehicle_type': vehicle_type.display_name,
                    'fuel_data': []}
     granular_start_date = start_date.replace(day=1)
     while granular_start_date < granular_end_date:
         next_date = granular_start_date + relativedelta(months=1)
         monthly_consumption = 0
-        for vehicle in vehicles:
-            if not VehicleFuelConsumption.query.filter(
-                            VehicleFuelConsumption.fuel_card_num == vehicle.fuel_card_num).scalar():
-                continue
+        for fuel_card_num in fuel_card_nums:
             refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
-                RefuelEvent.fuel_card_num == vehicle.fuel_card_num,
+                RefuelEvent.fuel_card_num == fuel_card_num,
                 RefuelEvent.time.between(granular_start_date, next_date)
             ).scalar()
             if refuel_sum:
