@@ -18,6 +18,18 @@ def hello_world(user_id):
         return '<h1>Something is broken.</h1>'
 
 
+@vehicles.route('/types')
+def get_car_types():
+    vehicle_types = VehicleType.query.all()
+
+    json_list = []
+
+    for vehicle_type in vehicle_types:
+        if vehicle_type.display_name != "N/A":
+            json_list.append({"id": vehicle_type.stara_id, "display_name": vehicle_type.display_name})
+    return Response(json.dumps(json_list), mimetype='application/json')
+
+
 @vehicles.route('/')
 def get_all_vehicles():
     vehicle_list = Vehicle.query.limit(100)
