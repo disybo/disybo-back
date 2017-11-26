@@ -1,24 +1,14 @@
-from flask import Blueprint, request, Response, jsonify
-from api.vehicle_station_data.models import FuelStation, RefuelEvent, Boy, FuelType
-from datetime import datetime
-from sqlalchemy.sql import func
-from database import db
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import calendar
 import json
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
+from flask import Blueprint, request, Response
+from sqlalchemy.sql import func
+
+from api.vehicle_station_data.models import FuelStation, RefuelEvent, FuelType
 
 stations = Blueprint('stations', 'stations', url_prefix='/api/stations')
-
-
-@stations.route('/boys/<int:user_id>')
-def hello_world(user_id):
-    try:
-        name = Boy.query.get(user_id).name
-        return "<h1>Hello, {}</ht>".format(name)
-    except Exception as ex:
-        print(ex)
-        return '<h1>Something is broken.</h1>'
 
 
 @stations.route('/fuel/overall')
@@ -76,9 +66,6 @@ def get_fuel_type():
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
-
-
-
 @stations.route('/fuel/granular')
 def get_granular_consumption():
     request_start_date = request.args.get('start')
@@ -111,7 +98,7 @@ def get_granular_consumption():
                     RefuelEvent.station_id == fs.station_id,
                     RefuelEvent.time.between(granular_start_date, next_date)
                 ).scalar()
-                station_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum })
+                station_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
                 granular_start_date = next_date
                 month_index += 1
             json_list.append(station_info)
@@ -130,7 +117,3 @@ def get_all_stations():
 
     # then do this
     return Response(json.dumps(json_list), mimetype='application/json')
-
-
-
-

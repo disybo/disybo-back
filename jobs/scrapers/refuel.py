@@ -32,7 +32,7 @@ class RefuelScraper(StaraAPIScraper):
                 if rf['Station'] not in fuel_station_ids:
                     missing_ids += 1
                     continue
-                parsed_time = datetime.fromtimestamp(int(rf['Time'])/1000)
+                parsed_time = datetime.fromtimestamp(int(rf['Time']) / 1000)
                 refuel_event = RefuelEvent(station_id=rf['Station'],
                                            fuel_card_num=rf['FuelCardNum'],
                                            fuel_type=str(rf['FuelQuality']),
