@@ -88,7 +88,10 @@ def fuel_per_vehicle(vehicle_id):
                     RefuelEvent.fuel_card_num == vfc.fuel_card_num,
                     RefuelEvent.time.between(granular_start_date, next_date)
                 ).scalar()
-                vfc_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
+                if refuel_sum:
+                    vfc_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
+                else:
+                    vfc_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': 0})
                 granular_start_date = next_date
             json_list.append(vfc_info)
     return Response(json.dumps(json_list), mimetype='application/json')
