@@ -76,9 +76,6 @@ def get_fuel_type():
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
-
-
-
 @stations.route('/fuel/granular')
 def get_granular_consumption():
     request_start_date = request.args.get('start')

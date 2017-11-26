@@ -1,9 +1,13 @@
 from collections import defaultdict
 from flask import Blueprint, Response
+from sqlalchemy.sql import func
 import json
-from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType, VehicleFuelConsumption
+from api.vehicle_station_data.models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType,\
+    VehicleFuelConsumption
 from api import MaintenancePeriod, Notification
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import calendar
 
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
 
@@ -58,6 +62,43 @@ def fuel_per_car():
              }
         )
 
+    return Response(json.dumps(json_list), mimetype='application/json')
+
+
+@vehicles.route('/fuel/consumption/<string:vehicle_id>')
+def fuel_per_vehicle(vehicle_id):
+    end_date = datetime.today()
+    start_date = end_date - relativedelta(years=1)
+
+    granularity = 'monthly'
+
+    json_list = []
+
+    if granularity == 'monthly':
+        granular_start_date = start_date.replace(day=1)
+        last_day = calendar.monthrange(end_date.year, end_date.month)
+        granular_end_date = end_date.replace(day=last_day[1])
+
+        vehicle = Vehicle.query.filter(Vehicle.id == vehicle_id)[0]
+        vfc_res = VehicleFuelConsumption.query.filter(VehicleFuelConsumption.vehicle_id == vehicle.vehicle_id).all()
+        if len(vfc_res) == 1:
+            vfc = vfc_res[0]
+
+            vfc_info = {'_id': vehicle_id,
+                        'vehicle_id': vfc.vehicle_id,
+                        'description': vfc.description,
+                        'fuel_data': []}
+            granular_start_date = start_date.replace(day=1)
+            while granular_start_date < granular_end_date:
+                next_date = granular_start_date + relativedelta(months=1)
+
+                refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+                    RefuelEvent.fuel_card_num == vfc.fuel_card_num,
+                    RefuelEvent.time.between(granular_start_date, next_date)
+                ).scalar()
+                vfc_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
+                granular_start_date = next_date
+            json_list.append(vfc_info)
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
