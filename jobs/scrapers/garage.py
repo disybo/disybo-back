@@ -35,7 +35,6 @@ class GarageScraper(StaraAPIScraper):
 
     def get_all_checkins(self):
 
-
         session = self.db.session
         all_ids = set([x.vehicle_id for x in session.query(Vehicle).all()])
         already_processed = set([x.vehicle_id for x in session.query(GarageVisit).all()])
@@ -47,47 +46,47 @@ class GarageScraper(StaraAPIScraper):
             json = resp.json()
             print("Processing {}".format(id))
             if 'rows' in json:
-             for row in json['rows']:
-                vehicle_id = row.get('IMPCODE', '')
-                try:
-                    service_time = datetime.datetime.fromtimestamp(row.get('SERVD') / 1000)
-                except Exception as ex:
-                    print("Could not parse service time!")
-                    continue
-                try:
-                    bill_time = datetime.datetime.fromtimestamp(row.get('BILLD') / 1000)
-                except Exception as ex:
-                    print("Could not parse bill time!")
-                    continue
-                note = row.get('NOTE', '')
-                name = row.get('NAME', '')
+                for row in json['rows']:
+                    vehicle_id = row.get('IMPCODE', '')
+                    try:
+                        service_time = datetime.datetime.fromtimestamp(row.get('SERVD') / 1000)
+                    except Exception as ex:
+                        print("Could not parse service time!")
+                        continue
+                    try:
+                        bill_time = datetime.datetime.fromtimestamp(row.get('BILLD') / 1000)
+                    except Exception as ex:
+                        print("Could not parse bill time!")
+                        continue
+                    note = row.get('NOTE', '')
+                    name = row.get('NAME', '')
 
-                sehiid = row.get('SEHIID', '')
-                rtype = row.get('RTYPE', 1.0)
-                total_sum = row.get('TSUM', 0.0)
-                item = row.get('ITEM', '')
-                ssumnovat = row.get('SSUMNOVAT', 0.0)
-                unitpr = row.get('UNIPTR', 0.0)
+                    sehiid = row.get('SEHIID', '')
+                    rtype = row.get('RTYPE', 1.0)
+                    total_sum = row.get('TSUM', 0.0)
+                    item = row.get('ITEM', '')
+                    ssumnovat = row.get('SSUMNOVAT', 0.0)
+                    unitpr = row.get('UNIPTR', 0.0)
 
-                visit = GarageVisit(
-                    vehicle_id=vehicle_id,
-                    service_time=service_time,
-                    bill_time=bill_time,
-                    note=note,
-                    name=name,
-                    sehiid=sehiid,
-                    rtype=rtype,
-                    total_sum=total_sum,
-                    item=item,
-                    ssumnovat=ssumnovat,
-                    unitpr=unitpr
-                )
-                try:
-                    session.add(visit)
-                    session.commit()
-                except Exception as e:
-                    print("Caught {}".format(e))
-                    pass
+                    visit = GarageVisit(
+                        vehicle_id=vehicle_id,
+                        service_time=service_time,
+                        bill_time=bill_time,
+                        note=note,
+                        name=name,
+                        sehiid=sehiid,
+                        rtype=rtype,
+                        total_sum=total_sum,
+                        item=item,
+                        ssumnovat=ssumnovat,
+                        unitpr=unitpr
+                    )
+                    try:
+                        session.add(visit)
+                        session.commit()
+                    except Exception as e:
+                        print("Caught {}".format(e))
+                        pass
 
 
 if __name__ == '__main__':

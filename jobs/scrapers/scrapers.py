@@ -44,4 +44,3 @@ class StaraAPIScraper(object):
             payload = {}
         r = requests.post(url="{}/{}".format(self.base_url, resource), headers=self.headers, params=payload)
         return r
-

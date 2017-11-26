@@ -53,7 +53,6 @@ class VehicleScraper(StaraAPIScraper):
         existing_vtypes = set([x.stara_id for x in session.query(VehicleType.stara_id).all()])
         existing_fcn = set(session.query(FuelCardNumber.num).all())
 
-
         for v in vehicles_json['rows']:
             if 'FuelCardNum' in v:
                 fcn = v['FuelCardNum']
@@ -104,6 +103,7 @@ class VehicleScraper(StaraAPIScraper):
                     session.rollback()
                     print("Skipping vehicle due to {}".format(ex))
                     pass
+
 
 if __name__ == '__main__':
     scraper = VehicleScraper()

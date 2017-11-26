@@ -24,6 +24,7 @@ class GarageVisit(db.Model):
 
     vehicle_rel = relationship(Vehicle, foreign_keys=[vehicle_id])
 
+
 class MaintenancePeriod(db.Model):
     __tablename__ = 'maintenance_periods'
 
@@ -48,6 +49,3 @@ class Notification(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
-
