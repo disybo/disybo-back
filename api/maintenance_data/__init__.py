@@ -1,1 +1,1 @@
-from .models import GarageVisit
+from .models import *
