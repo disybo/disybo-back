@@ -1,9 +1,10 @@
 import json
 from collections import defaultdict
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 from sqlalchemy.sql import func
+from sqlalchemy import exists
 import json
-from api.vehicle_station_data.models import Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType,\
+from api.vehicle_station_data.models import Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType, \
     VehicleFuelConsumption
 from api import MaintenancePeriod, Notification
 from datetime import datetime
@@ -54,6 +55,42 @@ def fuel_per_car():
              }
         )
 
+    return Response(json.dumps(json_list), mimetype='application/json')
+
+
+@vehicles.route('/fuel/consumption/type')
+def fuel_per_vehicle_type():
+    vehicle_type = request.args.get('id')
+    vehicles = Vehicle.query.filter(Vehicle.type == vehicle_type).all()
+
+    end_date = datetime.today()
+    start_date = end_date - relativedelta(years=1)
+
+    json_list = []
+
+    last_day = calendar.monthrange(end_date.year, end_date.month)
+    granular_end_date = end_date.replace(day=last_day[1])
+
+    refill_info = {'vehicle_type': vehicle_type,
+                   'fuel_data': []}
+    granular_start_date = start_date.replace(day=1)
+    while granular_start_date < granular_end_date:
+        next_date = granular_start_date + relativedelta(months=1)
+        monthly_consumption = 0
+        for vehicle in vehicles:
+            if not VehicleFuelConsumption.query.filter(
+                            VehicleFuelConsumption.fuel_card_num == vehicle.fuel_card_num).scalar():
+                continue
+            refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+                RefuelEvent.fuel_card_num == vehicle.fuel_card_num,
+                RefuelEvent.time.between(granular_start_date, next_date)
+            ).scalar()
+            if refuel_sum:
+                monthly_consumption += refuel_sum
+
+        refill_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': monthly_consumption})
+        granular_start_date = next_date
+    json_list.append(refill_info)
     return Response(json.dumps(json_list), mimetype='application/json')
 
 
