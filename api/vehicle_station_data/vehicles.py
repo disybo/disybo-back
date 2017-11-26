@@ -72,16 +72,15 @@ def fuel_per_car():
 
 @vehicles.route('/fuel/consumption/type')
 def fuel_per_vehicle_type():
+    print('wat')
     vehicle_type_id = request.args.get('id')
     vehicle_type = VehicleType.query.filter(VehicleType.stara_id == vehicle_type_id).all()[0]
 
-    vehicles = Vehicle.query.filter(Vehicle.type == vehicle_type_id).all()
+    vehicles_fcns = [x[0] for x in Vehicle.query.with_entities(Vehicle.fuel_card_num).filter(Vehicle.type == vehicle_type_id)]
+    all_fcns = [x[0] for x in RefuelEvent.query.with_entities(RefuelEvent.fuel_card_num)]
+    fuel_card_nums = list(set(vehicles_fcns).intersection(set(all_fcns)))
 
-    fuel_card_nums = []
-    for vehicle in vehicles:
-        if VehicleFuelConsumption.query.filter(
-                        VehicleFuelConsumption.fuel_card_num == vehicle.fuel_card_num).scalar():
-            fuel_card_nums.append(vehicle.fuel_card_num)
+    print(len(fuel_card_nums))
 
     end_date = datetime.today()
     start_date = end_date - relativedelta(years=1)
@@ -94,18 +93,17 @@ def fuel_per_vehicle_type():
     refill_info = {'vehicle_type': vehicle_type.display_name,
                    'fuel_data': []}
     granular_start_date = start_date.replace(day=1)
+    print('query time')
     while granular_start_date < granular_end_date:
         next_date = granular_start_date + relativedelta(months=1)
-        monthly_consumption = 0
-        for fuel_card_num in fuel_card_nums:
-            refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
-                RefuelEvent.fuel_card_num == fuel_card_num,
-                RefuelEvent.time.between(granular_start_date, next_date)
-            ).scalar()
-            if refuel_sum:
-                monthly_consumption += refuel_sum
-
-        refill_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': monthly_consumption})
+        refuel_sum = RefuelEvent.query.with_entities(func.sum(RefuelEvent.fuel_volume).label('sum')).filter(
+            RefuelEvent.fuel_card_num.in_(fuel_card_nums),
+            RefuelEvent.time.between(granular_start_date, next_date)
+        ).scalar()
+        if refuel_sum:
+            refill_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': refuel_sum})
+        else:
+            refill_info['fuel_data'].append({'month': granular_start_date.isoformat(), 'fuel_volume': 0})
         granular_start_date = next_date
     json_list.append(refill_info)
     return Response(json.dumps(json_list), mimetype='application/json')
