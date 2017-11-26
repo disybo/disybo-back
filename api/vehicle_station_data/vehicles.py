@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from flask import Blueprint, Response
 import json
-from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType
+from .models import Boy, Vehicle, VehicleType, RefuelEvent, FuelStation, FuelType, VehicleFuelConsumption
 from database import db
 
 vehicles = Blueprint('vehicles', 'vehicles', url_prefix='/api/vehicles')
@@ -43,9 +43,22 @@ def fuel_ratio():
     print('ok')
 
 
-@vehicles.route('/fuel/car')
+@vehicles.route('/fuel/total_consumption')
 def fuel_per_car():
-    print('ok')
+    fuel_consumptions = VehicleFuelConsumption.query.all()
+    json_list = []
+
+    for vfc in fuel_consumptions:
+        json_list.append(
+            {'id': vfc.id,
+             'vehicle_id': vfc.vehicle_id,
+             'fuel_card_num': vfc.fuel_card_num,
+             'description': vfc.description,
+             'consumption': vfc.consumption
+             }
+        )
+
+    return Response(json.dumps(json_list), mimetype='application/json')
 
 
 @vehicles.route('/stations/fuel')

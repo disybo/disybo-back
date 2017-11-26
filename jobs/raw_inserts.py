@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from jobs.scrapers.scrapers import DBConnector
-from api.vehicle_station_data.models import FuelStation, FuelType, RefuelEvent, Vehicle
+from api.vehicle_station_data.models import FuelStation, FuelType, RefuelEvent, Vehicle, VehicleFuelConsumption
 from sqlalchemy.sql import func
 import config
 
@@ -55,8 +55,6 @@ def insert_fuel_types():
 def query_vehicles():
     db = DBConnector(config.DevelopmentConfig.SQLALCHEMY_DATABASE_URI)
     session = db.session
-    json_list = []
-    counter = 0
     for v in session.query(Vehicle.fuel_card_num).distinct():
         fuel_card_num = v[0]
         if fuel_card_num == 'None':
@@ -69,19 +67,14 @@ def query_vehicles():
             RefuelEvent.fuel_card_num == fuel_card_num
         ).scalar()
 
-        data = {
-            'id': car.id,
-            'vehicle_id': car.vehicle_id,
-            'description': car.description,
-            'consumption': total_fuel
-        }
-
-        if data['consumption']:
-            print(data)
-            counter += 1
-
-        if counter == 10:
-            break
+        if total_fuel:
+            vfc = VehicleFuelConsumption(fuel_card_num=fuel_card_num,
+                                         vehicle_id=car.vehicle_id,
+                                         description=car.description,
+                                         consumption=total_fuel)
+            session.add(vfc)
+            print('Added ', vfc.vehicle_id)
+    session.commit()
 
 
 if __name__ == '__main__':
